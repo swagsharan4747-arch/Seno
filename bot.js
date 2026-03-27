@@ -31,7 +31,6 @@ const badWords = [
 ];
 
 const messageTracker = new Map();
-const emojiTracker = new Map();
 const channelTracker = new Map();
 
 client.once("ready", () => {
@@ -49,7 +48,6 @@ function isProtected(member){
   ) return true;
 
   return false;
-
 }
 
 // Send logs
@@ -62,7 +60,6 @@ async function sendLog(guild,msg){
     if(channel) channel.send(msg);
 
   }
-
 }
 
 // Timeout user
@@ -78,7 +75,6 @@ async function timeoutUser(member,reason){
 User: ${member.user.tag}
 Reason: ${reason}`
   );
-
 }
 
 // Ban user
@@ -94,7 +90,6 @@ async function banUser(member,reason){
 User: ${member.user.tag}
 Reason: ${reason}`
   );
-
 }
 
 // Message Protection
@@ -107,15 +102,6 @@ client.on("messageCreate", async message => {
   if(isProtected(member)) return;
 
   const text = message.content.toLowerCase();
-
-  // Link rule
-  if(text.includes("http://") || text.includes("https://") || text.includes("www.")){
-
-    await message.delete().catch(()=>{});
-
-    return timeoutUser(member,"Sending Links");
-
-  }
 
   // Bad word rule
   if(badWords.some(word => text.includes(word))){
@@ -132,42 +118,6 @@ Message: ${bad}`
     );
 
     return;
-
-  }
-
-  // EMOJI SPAM (3 emoji messages within 5 seconds)
-
-  const emojiMatches = message.content.match(/[\p{Emoji}]/gu);
-
-  if(emojiMatches){
-
-    const id = member.id;
-
-    if(!emojiTracker.has(id)) emojiTracker.set(id,[]);
-
-    const data = emojiTracker.get(id);
-
-    data.push({
-      msg: message,
-      time: Date.now()
-    });
-
-    const filtered = data.filter(m => Date.now() - m.time < 5000);
-
-    emojiTracker.set(id,filtered);
-
-    if(filtered.length >= 3){
-
-      for(const m of filtered){
-        m.msg.delete().catch(()=>{});
-      }
-
-      emojiTracker.delete(id);
-
-      return timeoutUser(member,"Emoji Spam");
-
-    }
-
   }
 
   // SPAM PROTECTION
@@ -199,7 +149,6 @@ Message: ${bad}`
     messageTracker.delete(id);
 
     return timeoutUser(member,"Fast Message Spam");
-
   }
 
   // DUPLICATE MESSAGE SPAM
@@ -215,7 +164,6 @@ Message: ${bad}`
     messageTracker.delete(id);
 
     return timeoutUser(member,"Duplicate Message Spam");
-
   }
 
 });
@@ -296,7 +244,6 @@ User: ${executor.user.tag} banned`
     );
 
     channelTracker.delete(executor.id);
-
   }
 
 }
